@@ -27,17 +27,34 @@ export default function AdminLoginPage() {
     setLoading(true)
     setError("")
 
-    // Simulate authentication
-    setTimeout(() => {
-      if (formData.username === "admin" && formData.password === "admin123") {
-        // Store auth token (in real app, use proper JWT)
-        localStorage.setItem("adminToken", "mock-jwt-token")
-        router.push("/admin/dashboard")
-      } else {
-        setError("Invalid credentials. Use admin/admin123 for demo.")
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/token/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: formData.username, // or use "username" if backend expects that
+          password: formData.password,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.detail || "Invalid credentials")
+        setLoading(false)
+        return
       }
+
+      localStorage.setItem("adminToken", data.access)
+      router.push("/admin/dashboard")
+    } catch (err) {
+      console.error("Login error:", err)
+      setError("Something went wrong")
+    } finally {
       setLoading(false)
-    }, 1000)
+    }
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,12 +89,12 @@ export default function AdminLoginPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">Username or Email</Label>
                 <Input
                   id="username"
                   name="username"
                   type="text"
-                  placeholder="Enter your username"
+                  placeholder="Enter your username or email"
                   value={formData.username}
                   onChange={handleInputChange}
                   required
@@ -122,17 +139,11 @@ export default function AdminLoginPage() {
                 {loading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
-
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-800 font-medium mb-2">Demo Credentials:</p>
-              <p className="text-sm text-blue-600">Username: admin</p>
-              <p className="text-sm text-blue-600">Password: admin123</p>
-            </div>
           </CardContent>
         </Card>
 
         <div className="text-center mt-6">
-          <p className="text-blue-200 text-sm">Secure admin access protected by multi-factor authentication</p>
+          <p className="text-blue-200 text-sm">Secure admin access protected by JWT</p>
         </div>
       </div>
     </div>
