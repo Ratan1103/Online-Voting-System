@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Search, UserCheck, UserX, Eye, Download } from "lucide-react"
-import { getToken } from "@/utils/localStorage"
+import { getAdminToken } from "@/utils/localStorage"
 
 interface Voter {
   id: string
@@ -37,7 +37,7 @@ export function VoterManagement() {
 
   useEffect(() => {
     const fetchVoters = async () => {
-      const token = getToken()
+      const token = getAdminToken()
       if (!token) return
       try {
         const res = await fetch("http://127.0.0.1:8000/api/admin/voters/", {
@@ -78,7 +78,7 @@ export function VoterManagement() {
   }, [voters, searchTerm, statusFilter])
 
   const handleStatusChange = async (voterId: string, is_verified: boolean) => {
-    const token = getToken()
+    const token = getAdminToken()
     if (!token) return
     try {
       console.log("voterId",voterId)

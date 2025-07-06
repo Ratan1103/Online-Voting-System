@@ -103,3 +103,30 @@ class VoterVerifyRejectView(APIView):
             }, status=status.HTTP_200_OK)
         
         return Response({"error": "Invalid action"}, status=status.HTTP_400_BAD_REQUEST)
+
+class VoterStatusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        if not user.is_voter:
+            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+
+        return Response({
+            "username": user.username,
+            "email": user.email,
+            "is_verified": user.is_verified,
+        })
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def voter_status_view(request):
+    user = request.user
+    if not hasattr(user, "is_voter") or not user.is_voter:
+        return Response({"error": "You are not authorized as a voter."}, status=403)
+
+    return Response({
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "is_verified": user.is_verified,
+    })
